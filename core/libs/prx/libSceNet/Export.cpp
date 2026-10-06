@@ -207,7 +207,7 @@ std::map<int, Sock> g_socks;
 std::set<int> g_epolls;
 std::map<int, std::map<int, NetEpollEvent>> g_epoll_socks;
 std::set<int> g_epoll_aborted;
-std::set<int> g_pools;
+std::map<int, int> g_pools;
 std::map<int, int> g_resolvers;
 int g_next_sock = 32;
 int g_next_epoll = 0x4000;
@@ -311,7 +311,7 @@ int APS5_VABI sceNetPoolCreate(const char* name, int size, int flags) {
     }
     std::lock_guard<std::mutex> lk(g_mutex);
     const int id = g_next_pool++;
-    g_pools.insert(id);
+    g_pools.emplace(id, size);
     return id;
 }
 
@@ -761,8 +761,13 @@ int APS5_VABI sceNetEpollCreate(const char* name, int flags) {
     return id;
 }
 
-int APS5_VABI sceNetGetMemoryPoolStats() {
-    NotImplemented_nid_no_patch(__func__);
+int APS5_VABI sceNetGetMemoryPoolStats(int memid, NetMemoryPoolStats* stats) {
+    std::lock_guard<std::mutex> lk(g_mutex);
+    const auto pool = g_pools.find(memid);
+    if (pool == g_pools.end()) return fail(NET_EBADF);
+    if (!stats) return fail(NET_EINVAL);
+    *stats = {};
+    stats->pool_size = static_cast<std::uint64_t>(pool->second);
     return 0;
 }
 

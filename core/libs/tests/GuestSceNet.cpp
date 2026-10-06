@@ -35,6 +35,9 @@ int APS5_VABI sceNetCtlGetState(int*);
 int APS5_VABI sceNetInetPton(int, const char*, void*);
 const char* APS5_VABI sceNetInetNtop(int, const void*, char*, std::uint32_t);
 int* APS5_VABI sceNetErrnoLoc(void);
+int APS5_VABI sceNetPoolCreate(const char*, int, int);
+int APS5_VABI sceNetPoolDestroy(int);
+int APS5_VABI sceNetGetMemoryPoolStats(int, NetMemoryPoolStats*);
 }
 
 struct NetIovec {
@@ -142,8 +145,27 @@ static void CheckAddressText(int family, const char* text) {
     Require(sceNetInetNtop(family, address.data(), nullptr, output.size()) == nullptr && *sceNetErrnoLoc() == 22);
 }
 
+static void CheckMemoryPoolStats() {
+    constexpr int badDescriptor = static_cast<int>(0x80410109);
+    constexpr int invalidArgument = static_cast<int>(0x80410116);
+    static_assert(sizeof(NetMemoryPoolStats) == 32);
+    const int pool = sceNetPoolCreate("stats", 0x4000, 0);
+    Require(pool >= 0);
+    NetMemoryPoolStats stats{};
+    std::memset(&stats, 0xff, sizeof(stats));
+    Require(sceNetGetMemoryPoolStats(pool, &stats) == 0);
+    Require(stats.pool_size == 0x4000 && stats.max_inuse_size == 0 && stats.current_inuse_size == 0 && stats.reserved == 0);
+    *sceNetErrnoLoc() = 0;
+    Require(sceNetGetMemoryPoolStats(pool, nullptr) == invalidArgument && *sceNetErrnoLoc() == 22);
+    Require(sceNetPoolDestroy(pool) == 0);
+    *sceNetErrnoLoc() = 0;
+    Require(sceNetGetMemoryPoolStats(pool, &stats) == badDescriptor && *sceNetErrnoLoc() == 9);
+    Require(sceNetGetMemoryPoolStats(pool, nullptr) == badDescriptor);
+}
+
 int main() {
     Require(sceNetInit_nid_postfix() == 0);
+    CheckMemoryPoolStats();
     CheckAddressText(2, "127.0.0.1");
     CheckAddressText(2, "255.255.255.255");
     CheckAddressText(28, "::1");

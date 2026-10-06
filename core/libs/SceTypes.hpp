@@ -1210,6 +1210,13 @@ struct NetEpollEvent {
     NetEpollData data;
 };
 
+struct NetMemoryPoolStats {
+    std::uint64_t pool_size;
+    std::uint64_t max_inuse_size;
+    std::uint64_t current_inuse_size;
+    std::int32_t reserved;
+};
+
 struct NetCtlNatInfo { std::uint8_t opaque[128]; };
 
 union NetCtlInfo { std::uint8_t opaque[256]; };
