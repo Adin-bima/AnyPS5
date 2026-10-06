@@ -113,6 +113,7 @@ Throughout the project, every function at every stage either **does exactly what
 - [sceHttpSetResponseHeaderMaxSize, sceHttpRedirectCacheFlush, sceHttpsUnloadCert](../../core/libs/prx/libSceHttp/Export.cpp) (libSceHttp) - signatures follow [shadPS4](https://github.com/shadps4-emu/shadPS4/blob/main/src/core/libraries/network/http.cpp) (PS4); no PS5 reference has them
 - [sceHttp2GetMemoryPoolStats](../../core/libs/prx/libSceHttp2/Export.cpp) (libSceHttp2) - unknown signature
 - [sceNetGetMemoryPoolStats](../../core/libs/prx/libSceNet/Export.cpp) (libSceNet) - unknown signature
+- [sceNpSetContentRestriction](../../core/libs/prx/libSceNpManager/Export.cpp) (libSceNpManager) - only a null restriction is rejected; the restriction layout is unknown, so the size, default age and age restriction list checks of [shadPS4](https://github.com/shadps4-emu/shadPS4/blob/main/src/core/libraries/np/np_manager.cpp) (PS4, 24-byte layout) are not applied. The restriction is not stored, as no signed-out call reads it
 - [sceHttpSetRequestStatusCallback](../../core/libs/prx/libSceHttp/Export.cpp) (libSceHttp) - no reference implements it (shadPS4 only logs and returns 0); when the callback runs and what status it gets is unknown
 - [sceNpSessionSignalingGetMemoryInfo](../../core/libs/prx/libSceNpSessionSignaling/Export.cpp) (libSceNpSessionSignaling) - unknown signature
 - [sceNpSessionSignalingGetConnectionStatistics](../../core/libs/prx/libSceNpSessionSignaling/Export.cpp) (libSceNpSessionSignaling) - unknown signature
